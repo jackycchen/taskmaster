@@ -172,9 +172,10 @@ class Task:
     def delete(task_id: int, user_id: int) -> bool:
         conn = duckdb.connect('database.db')
         try:
-            conn.execute("DELETE FROM tasks WHERE id = ? AND user_id = ?", [task_id, user_id])
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM tasks WHERE id = ? AND user_id = ?", [task_id, user_id])
             conn.commit()
-            return conn.cursor().rowcount > 0
+            return cursor.rowcount > 0
         except Exception as e:
             raise HTTPException(status_code=400, detail=str(e))
         finally:

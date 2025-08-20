@@ -239,22 +239,29 @@ export default {
     }
 
     // 删除任务
-    const deleteTask = (taskId) => {
-      ElMessageBox.confirm('确定要删除这个任务吗？', '确认删除', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(async () => {
-        try {
-          await apiClient.delete(`${API_CONFIG.BASE_URL}${API_CONFIG.TASKS.DELETE}/${taskId}`)
-          ElMessage.success('任务删除成功')
-          loadTasks() // 重新加载任务列表
-        } catch (error) {
-          ElMessage.error('删除失败: ' + (error.response?.data?.detail || error.message))
+    const deleteTask = async (taskId) => {
+      try {
+        const confirmResult = await ElMessageBox.confirm(
+          '确定要删除这个任务吗？',
+          '确认删除',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        );
+        
+        if (confirmResult === 'confirm') {
+          await apiClient.delete(`${API_CONFIG.BASE_URL}${API_CONFIG.TASKS.DELETE}/${taskId}`);
+          ElMessage.success('任务删除成功');
+          loadTasks(); // 重新加载任务列表
         }
-      }).catch(() => {
-        // 用户取消删除
-      })
+      } catch (error) {
+        // 处理取消操作或其他错误
+        if (error !== 'cancel') {
+          ElMessage.error('删除失败: ' + (error.response?.data?.detail || error.message));
+        }
+      }
     }
 
     // 切换视图

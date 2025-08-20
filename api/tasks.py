@@ -1,12 +1,15 @@
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import uuid
 from models.task import Task, TaskModel
+from logging import getLogger
 from api.auth import get_current_user
 from models.user import UserModel
 
+logger = getLogger(__name__)
 router = APIRouter()
 
 # 数据模型
@@ -96,25 +99,6 @@ async def update_task(task_id: int, task_update: TaskUpdate, current_user: UserM
             raise HTTPException(status_code=400, detail="Failed to update task")
         
         return updated_task
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-# 删除任务
-@router.delete("/{task_id}")
-async def delete_task(task_id: int, current_user: UserModel = Depends(get_current_user)):
-    try:
-        # 检查任务是否存在且属于当前用户
-        existing_task = Task.get_by_id(task_id, current_user.id)
-        if not existing_task:
-            raise HTTPException(status_code=404, detail="Task not found")
-        
-        result = Task.delete(task_id, current_user.id)
-        if not result:
-            raise HTTPException(status_code=400, detail="Failed to delete task")
-        
-        return {"message": "Task deleted successfully"}
     except HTTPException:
         raise
     except Exception as e:
